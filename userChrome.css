@@ -1,0 +1,276 @@
+/* Firefox Shortcut Manager — compact Windows app windows.
+ * Install in <Firefox profile>/chrome/userChrome.css (see README.md).
+ * Every rule requires Firefox's native Taskbar Tab marker. Regular browser
+ * windows, including ordinary single-tab windows, are unaffected.
+ */
+
+/* Remove native extra titlebar space, including the maximized-window inset. */
+:root[taskbartab]:not([popup-window]) {
+  --tab-min-height: 32px !important;
+  --titlebar-height: 32px !important;
+  --urlbar-container-height: 28px !important;
+}
+
+:root[taskbartab]:not([popup-window]) #navigator-toolbox {
+  padding-block: 0 !important;
+  margin-block: 0 !important;
+  border-block: 0 !important;
+}
+
+/* Remove the empty tab strip, bookmarks, menus and vertical-tab sidebar. */
+:root[taskbartab]:not([popup-window]) :is(
+  #TabsToolbar,
+  #toolbar-menubar,
+  #PersonalToolbar,
+  #sidebar-main,
+  #sidebar-box,
+  #sidebar-splitter,
+  #sidebar-launcher-splitter
+) {
+  display: none !important;
+}
+
+/* Use the existing navigation toolbar as a titlebar, with native theme colours.
+ * Leave notification bars and permission/extension popup panels alone.
+ */
+:root[taskbartab]:not([popup-window]) #nav-bar {
+  --toolbarbutton-inner-padding: 4px !important;
+  --toolbarbutton-outer-padding: 2px !important;
+  --urlbar-min-height: 28px !important;
+  box-sizing: border-box !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  border: 0 !important;
+  padding: 0 0 0 8px !important;
+  box-shadow: none !important;
+  -moz-window-dragging: drag !important;
+}
+
+/* Flexible blank space between the app identity and buttons is the drag handle. Buttons stay on the
+ * right, followed by Firefox's own minimize / maximize / close controls.
+ * No absolute positioning, so extension overflow can continue to work.
+ */
+:root[taskbartab]:not([popup-window]) #nav-bar-customization-target {
+  flex: 1 1 auto !important;
+  min-width: 64px !important;
+  box-sizing: border-box !important;
+  height: 32px !important;
+  min-height: 0 !important;
+  align-items: center !important;
+  padding-block: 2px !important;
+  justify-content: flex-start !important;
+  -moz-window-dragging: drag !important;
+}
+
+/* Keep pinned extensions, the extensions menu, and the profile/account button.
+ * Firefox hides the account button in Taskbar Tabs by default; restore its
+ * layout without overriding an actual hidden attribute or creating a button
+ * when it isn't present in this profile's toolbar configuration.
+ */
+:root[taskbartab]:not([popup-window]) #nav-bar-customization-target > :not(
+  #urlbar-container,
+  #fxa-toolbar-menu-button,
+  #profiles-toolbar-button,
+  #unified-extensions-button,
+  .unified-extensions-item,
+  [id$="-browser-action"]
+) {
+  display: none !important;
+}
+
+:root[taskbartab]:not([popup-window]) #nav-bar-customization-target > :is(
+  #fxa-toolbar-menu-button,
+  #profiles-toolbar-button,
+  #unified-extensions-button,
+  .unified-extensions-item,
+  [id$="-browser-action"]
+):not([hidden="true"], [hidden=""]) {
+  display: flex !important;
+  -moz-window-dragging: no-drag !important;
+}
+
+/* Remove the remaining decorative / navigation controls outside the target.
+ * Keep the overflow button so extensions remain reachable in narrow windows.
+ */
+:root[taskbartab]:not([popup-window]) #nav-bar > :is(
+  #taskbar-tabs-audio,
+  #PanelUI-button,
+  .titlebar-spacer
+) {
+  display: none !important;
+}
+
+:root[taskbartab]:not([popup-window]) #nav-bar :is(
+  toolbarbutton,
+  .titlebar-buttonbox-container
+) {
+  -moz-window-dragging: no-drag !important;
+}
+
+/* Toolbar items have a 28px hit area with 2px above and below.
+ * Caption buttons are excluded so their native hit targets fill the header.
+ */
+:root[taskbartab]:not([popup-window]) #nav-bar toolbarbutton:not(.titlebar-button) {
+  box-sizing: border-box !important;
+  align-self: center !important;
+  height: 28px !important;
+  min-height: 0 !important;
+  max-height: 28px !important;
+  margin-block: 0 !important;
+  padding: 2px !important;
+}
+
+:root[taskbartab]:not([popup-window]) #nav-bar toolbarbutton:not(.titlebar-button) > :is(
+  .toolbarbutton-icon,
+  .toolbarbutton-badge-stack
+) {
+  box-sizing: border-box !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 4px !important;
+}
+
+:root[taskbartab]:not([popup-window]) #nav-bar > :is(
+  #nav-bar-overflow-button,
+  #PanelUI-button
+) {
+  min-height: 0 !important;
+  align-self: center !important;
+  max-height: 28px !important;
+}
+
+/* Firefox already includes a separate set of caption buttons in #nav-bar.
+ * Only expose that set with an integrated titlebar and outside fullscreen;
+ * leave Firefox's maximize/restore visibility and native hit targets intact.
+ */
+:root[taskbartab][customtitlebar]:not([popup-window], [inFullscreen])
+  #nav-bar > .titlebar-buttonbox-container {
+  display: flex !important;
+  align-self: stretch !important;
+  margin-inline-start: 8px !important;
+  height: 32px !important;
+  min-height: 0 !important;
+  margin-block: 0 !important;
+  padding-block: 0 !important;
+}
+
+:root[taskbartab]:not([popup-window]) #nav-bar :is(.titlebar-buttonbox, .titlebar-button) {
+  box-sizing: border-box !important;
+  height: 32px !important;
+  min-height: 0 !important;
+  max-height: 32px !important;
+  margin-block: 0 !important;
+  padding-block: 0 !important;
+}
+
+:root[taskbartab][inFullscreen] #nav-bar > .titlebar-buttonbox-container {
+  display: none !important;
+}
+
+/* Taskbar Tabs hide their tab strip internally. Use the native app favicon
+ * in the navigation toolbar instead of trying to resurrect the hidden tabs.
+ * The installer supplies the registered app name for each Taskbar Tab UUID.
+ */
+:root[taskbartab]:not([popup-window]) #nav-bar > #taskbar-tabs-favicon {
+  display: block !important;
+  visibility: visible !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 8px 0 0 !important;
+  align-self: center !important;
+  flex: 0 0 20px !important;
+  -moz-window-dragging: drag !important;
+}
+
+:root[taskbartab]:not([popup-window]) #nav-bar-customization-target::before {
+  content: var(--fsm-app-name, "App") !important;
+  display: block !important;
+  align-self: center !important;
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: 30vw !important;
+  margin-inline-end: 8px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-weight: 600 !important;
+  color: var(--toolbar-color, inherit) !important;
+  -moz-window-dragging: drag !important;
+}
+
+/* The container is inside the URL bar. Retain that host, but hide its normal
+ * contents without hiding the container badge. Visibility (rather than hiding
+ * the host) also works with Firefox versions using shadow DOM for the URL bar.
+ * No badge is invented for app windows without a container.
+ */
+:root[taskbartab]:not([popup-window]) #nav-bar-customization-target > #urlbar-container {
+  display: flex !important;
+  position: relative !important;
+  flex: 0 0 24px !important;
+  min-width: 0 !important;
+  max-width: 24px !important;
+  margin-inline-end: auto !important;
+  box-sizing: border-box !important;
+  height: 28px !important;
+  min-height: 0 !important;
+  max-height: 28px !important;
+  margin-block: 0 !important;
+  align-self: center !important;
+  visibility: hidden !important;
+  --urlbar-container-min-width: 0px !important;
+}
+
+:root[taskbartab]:not([popup-window]) #urlbar {
+  visibility: hidden !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  pointer-events: none !important;
+}
+
+:root[taskbartab]:not([popup-window]) #userContext-icons:not([hidden="true"], [hidden=""]) {
+  display: flex !important;
+  visibility: visible !important;
+  position: absolute !important;
+  inset-inline-start: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  height: 24px !important;
+  box-sizing: border-box !important;
+  max-height: 24px !important;
+  padding: 2px !important;
+  font-size: 12px !important;
+  line-height: 16px !important;
+  border: 1px solid currentColor !important;
+  border-radius: 0 !important;
+  color: var(--identity-tab-color) !important;
+  pointer-events: auto !important;
+  -moz-window-dragging: no-drag !important;
+}
+
+:root[taskbartab]:not([popup-window]) #page-action-buttons #userContext-icons #userContext-label {
+  display: none !important;
+}
+
+:root[taskbartab]:not([popup-window]) #page-action-buttons #userContext-icons #userContext-indicator {
+  display: block !important;
+  visibility: visible !important;
+  flex-shrink: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Keep the badge positioned against the URL-bar host, not the page-actions
+ * group at the far end of the hidden address field.
+ */
+:root[taskbartab]:not([popup-window]) #page-action-buttons {
+  position: static !important;
+}
